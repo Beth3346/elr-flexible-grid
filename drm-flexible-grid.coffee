@@ -3,47 +3,65 @@
 ###############################################################################
 "use strict"
 
+# adds case insensitive contains to jQuery
+
+$.extend $.expr[":"], {
+    "containsNC": (elem, i, match, array) ->
+        (elem.textContent || elem.innerText || "").toLowerCase().indexOf((match[3] || "").toLowerCase()) >= 0
+}
+
 ( ($) ->
     class window.DrmFlexibleGrid
         constructor: (@gridClass = 'drm-flexible-grid', @imagesPerRow = 4, @flex = true) ->
-            @grid = $ ".#{@gridClass}"
-            @images = @grid.find 'img'
+            self = @
+            self.grid = $ ".#{self.gridClass}"
+            self.gridNav = $ '.drm-grid-nav'
+            self.items = self.grid.find '.drm-grid-item'
 
-            $(window).load @positionListItems
+            $(window).load self.positionListItems
 
-            if @flex then $(window).resize @positionListItems
-            # @images.on 'load', @positionListItem
+            if self.flex then $(window).resize self.positionListItems
 
-            $(window).load @resizeCurtain
+            $(window).load self.resizeCurtain
 
-            @grid.on 'mouseenter', 'li', ->
+            self.grid.on 'mouseenter', '.drm-grid-item', ->
                 $(@).find('.curtain').stop().fadeIn 'fast'
 
-            @grid.on 'mouseleave', 'li', ->
+            self.grid.on 'mouseleave', '.drm-grid-item', ->
                 $(@).find('.curtain').stop().fadeOut 'fast'
+
+            self.gridNav.on 'click', 'button.drm-grid-filter', ->
+                filter = $(@).data('filter').toLowerCase()
+                self.filterListItems filter
 
         resizeCurtain: =>
             curtain = @grid.find '.curtain'
 
             $.each curtain, (key, value) ->
                 that = $ value
-                holder = that.parent 'li'
+                holder = that.parent '.drm-grid-item'
                 imageHeight = holder.find('img').height()
 
                 that.height(imageHeight).hide()
 
         positionListItems: =>
             self = @
-            items = self.grid.find 'li'
+            items = self.grid.find '.drm-grid-item'
 
             $.each items, (key, value) ->
                 that = $ value
                 index = key + 1
                 columnNum = if index % self.imagesPerRow is 0 then self.imagesPerRow - 1 else (index % self.imagesPerRow) - 1
                 that.attr 'data-column', columnNum
-                prevImage = if index > self.imagesPerRow then self.grid.find('li').eq(index - (self.imagesPerRow + 1)) else null
+                that.attr 'data-num', index
+                prevImage = if index > self.imagesPerRow then self.grid.find('.drm-grid-item').eq(index - (self.imagesPerRow + 1)) else null
+                # captionTitle = that.find '.caption h1'
+                # subTitle = that.find('.caption-sub-title').remove()
+                # subTitle = $('<h2></h2>',
+                #     class: 'caption-sub-title'
+                #     text: "Image: #{index}").insertAfter captionTitle
                 
-                if prevImage
+                if prevImage?
                     margin = prevImage.outerWidth(true) - prevImage.outerWidth(false)
                     top = if index < ((self.imagesPerRow * 2) + 1) then prevImage.outerHeight(false) + margin else prevImage.outerHeight(false) + margin + prevImage.position().top
                     left = (prevImage.outerWidth(false) * columnNum) + (margin * columnNum)
@@ -52,18 +70,34 @@
                         'top': top
                         'left': left
                         'position': 'absolute'
+                else
+                    that.css
+                        'top': 0
+                        'left': 0
+                        'position': 'relative'                    
 
                 that.fadeIn 1000
 
             @grid.css 'height': (items.last().outerHeight(true) + items.last().position().top) + 500
 
-        positionListItem: ->
-            that = $ @
-            item = that.closest 'li'
-            grid = item.closest 'ul'
-            index = item.index()
+        filterListItems: (filter) =>
+            self = @
+            self.grid.empty()
 
-            console.log index
+            if filter is 'all'
+                $.each self.items, (key, value) ->
+                    that = $ value
+                    that.appendTo(self.grid).hide()
+            else
+                $.each self.items, (key, value) ->
+                    that = $ value
+                    tagList = that.find 'ul.caption-tags'
+
+                    hasTag = if tagList.has("li:containsNC(#{filter})").length isnt 0 then true else false
+
+                    if hasTag then that.appendTo(self.grid).hide()
+
+            self.positionListItems()
     
     new DrmFlexibleGrid()
 
