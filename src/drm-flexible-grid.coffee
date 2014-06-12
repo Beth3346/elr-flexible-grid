@@ -18,9 +18,14 @@ $.extend $.expr[":"], {
             self.gridNav = $ '.drm-grid-nav'
             self.items = self.grid.find '.drm-grid-item'
 
-            $(window).load self.positionListItems
+            $(window).load ->
+                self.positionListItems()
+                self.addFilterButtons()
 
-            if self.flex then $(window).resize self.positionListItems
+            if self.flex 
+                $(window).resize ->
+                    self.positionListItems()
+                    self.resizeCurtain()
 
             $(window).load self.resizeCurtain
 
@@ -31,8 +36,34 @@ $.extend $.expr[":"], {
                 $(@).find('.curtain').stop().fadeOut 'fast'
 
             self.gridNav.on 'click', 'button.drm-grid-filter', ->
-                filter = $(@).data('filter').toLowerCase()
+                that = $ @
+                filter = that.data('filter').toLowerCase()
                 self.filterListItems filter
+                that.siblings('button').removeClass 'active'
+                that.addClass 'active'
+
+        capitalize: (str) ->
+            str.toLowerCase().replace /^.|\s\S/g, (a) ->
+                a.toUpperCase()
+
+        addFilterButtons: =>
+            self = @
+            tags = []
+            tagListItems = self.grid.find 'ul.caption-tags li'
+
+            $.each tagListItems, (key, value) ->
+                tag = $(value).text()
+                tags.push self.capitalize tag
+                $.unique tags
+
+            $.each tags, (key, value) ->
+                tagButton = $ '<button></button>',
+                    class: 'drm-grid-filter'
+                    text: value
+                    'data-filter': value.toLowerCase()
+                tagButton.appendTo self.gridNav
+
+            self.gridNav.find('.drm-grid-filter').first().addClass 'active'
 
         resizeCurtain: =>
             curtain = @grid.find '.curtain'
@@ -43,6 +74,30 @@ $.extend $.expr[":"], {
                 imageHeight = holder.find('img').height()
 
                 that.height(imageHeight).hide()
+
+        resizeGrid: (items) =>
+            self = @
+            tallestColumn = 0
+            columnHeights = []
+
+            i = 0
+            until i is self.imagesPerRow 
+                columnHeights.push 0
+                i = i + 1
+            
+            $.each items, (key, value) ->
+                that = $ value
+                columnNum = that.data 'column'
+                height = that.outerHeight true
+
+                columnHeights[columnNum] += height
+
+            $.each columnHeights, (key, value) ->
+                if value > tallestColumn
+                    tallestColumn = value
+                    tallestColumn
+
+            self.grid.css 'height': tallestColumn + 40
 
         positionListItems: =>
             self = @
@@ -55,11 +110,6 @@ $.extend $.expr[":"], {
                 that.attr 'data-column', columnNum
                 that.attr 'data-num', index
                 prevImage = if index > self.imagesPerRow then self.grid.find('.drm-grid-item').eq(index - (self.imagesPerRow + 1)) else null
-                # captionTitle = that.find '.caption h1'
-                # subTitle = that.find('.caption-sub-title').remove()
-                # subTitle = $('<h2></h2>',
-                #     class: 'caption-sub-title'
-                #     text: "Image: #{index}").insertAfter captionTitle
                 
                 if prevImage?
                     margin = prevImage.outerWidth(true) - prevImage.outerWidth(false)
@@ -76,9 +126,9 @@ $.extend $.expr[":"], {
                         'left': 0
                         'position': 'relative'                    
 
-                that.fadeIn 1000
+                that.fadeIn 1000            
 
-            @grid.css 'height': (items.last().outerHeight(true) + items.last().position().top) + 500
+            self.resizeGrid items
 
         filterListItems: (filter) =>
             self = @
