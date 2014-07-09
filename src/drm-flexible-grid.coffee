@@ -1,12 +1,14 @@
 ###############################################################################
-# Creates a Pinterest like sortable, draggable grid
+# Creates a Pinterest like sortable, image grid
 ###############################################################################
+#TODO: add check so that one column doesn't get too long. Skip it and move to the next column
 "use strict"
 
+$ = jQuery
 # adds case insensitive contains to jQuery
 
 $.extend $.expr[":"], {
-    "containsNC": (elem, i, match, array) ->
+    "containsNC": (elem, i, match) ->
         (elem.textContent || elem.innerText || "").toLowerCase().indexOf((match[3] || "").toLowerCase()) >= 0
 }
 
@@ -14,138 +16,155 @@ class @DrmFlexibleGrid
     constructor: (@gridClass = 'drm-flexible-grid', @imagesPerRow = 4, @flex = true) ->
         self = @
         self.grid = $ ".#{self.gridClass}"
-        self.gridNav = $ '.drm-grid-nav'
-        self.items = self.grid.find '.drm-grid-item'
 
-        $(window).load ->
-            self.positionListItems()
-            self.addFilterButtons()
+        if self.grid.length isnt 0
+            self.gridNav = $ '.drm-grid-nav'
+            self.items = self.grid.find('.drm-grid-item').hide()
+            hash = window.location.hash
 
-        if self.flex 
-            $(window).resize ->
-                self.positionListItems()
-                self.resizeCurtain()
+            $(window).load ->
+                self.tags = self.getTags()
+                filter = if hash then hash.replace /^#/, '' else null
+                self.addFilterButtons self.tags
+                self.filterListItems filter
 
-        $(window).load self.resizeCurtain
+                if filter
+                    activeButton = $("button.drm-grid-filter[data-filter=#{filter}]")
+                    activeButton.siblings('button').removeClass 'active'
+                    activeButton.addClass 'active'
 
-        self.grid.on 'mouseenter', '.drm-grid-item', ->
-            $(@).find('.curtain').stop().fadeIn 'fast'
+            if self.flex
+                $(window).resize ->
+                    items = self.grid.find '.drm-grid-item'
+                    self.positionListItems items
+                    self.resizeCurtain()
 
-        self.grid.on 'mouseleave', '.drm-grid-item', ->
-            $(@).find('.curtain').stop().fadeOut 'fast'
+            $(window).load self.resizeCurtain
 
-        self.gridNav.on 'click', 'button.drm-grid-filter', ->
-            that = $ @
-            filter = that.data('filter').toLowerCase()
-            self.filterListItems filter
-            that.siblings('button').removeClass 'active'
-            that.addClass 'active'
+            self.grid.on 'mouseenter', '.drm-grid-item', ->
+                $(@).find('.curtain').stop().fadeIn 'fast'
 
-    capitalize: (str) ->
-        str.toLowerCase().replace /^.|\s\S/g, (a) ->
-            a.toUpperCase()
+            self.grid.on 'mouseleave', '.drm-grid-item', ->
+                $(@).find('.curtain').stop().fadeOut 'fast'
 
-    addFilterButtons: =>
+            self.gridNav.on 'click', 'button.drm-grid-filter', ->
+                _that = $ @
+                filter = _that.data('filter').toLowerCase()
+                self.filterListItems filter
+                _that.siblings('button').removeClass 'active'
+                _that.addClass 'active'
+
+    getTags: =>
         self = @
         tags = []
-        tagListItems = self.grid.find 'ul.caption-tags li'
+        _tagListItems = self.grid.find 'ul.caption-tags li'
 
-        $.each tagListItems, (key, value) ->
-            tag = $(value).text()
-            tags.push self.capitalize tag
+        $.each _tagListItems, (key, value) ->
+            _tag = $(value).text()
+            tags.push _tag
             $.unique tags
 
+        tags
+
+    addFilterButtons: (tags) =>
+        self = @
+
+        _capitalize = (str) ->
+            str.toLowerCase().replace /^.|\s\S/g, (a) ->
+                a.toUpperCase()
+
         $.each tags, (key, value) ->
-            tagButton = $ '<button></button>',
+            _tagButton = $ '<button></button>',
                 class: 'drm-grid-filter'
-                text: value
-                'data-filter': value.toLowerCase()
-            tagButton.appendTo self.gridNav
+                text: _capitalize value
+                'data-filter': value
+            _tagButton.appendTo self.gridNav
 
         self.gridNav.find('.drm-grid-filter').first().addClass 'active'
 
     resizeCurtain: =>
-        curtain = @grid.find '.curtain'
+        _curtain = @grid.find '.curtain'
 
-        $.each curtain, (key, value) ->
-            that = $ value
-            holder = that.parent '.drm-grid-item'
-            imageHeight = holder.find('img').height()
+        $.each _curtain, (key, value) ->
+            _that = $ value
+            _holder = _that.parent '.drm-grid-item'
+            _imageHeight = _holder.find('img').height()
 
-            that.height(imageHeight).hide()
+            _that.height(_imageHeight).hide()
 
-    resizeGrid: (items) =>
+    addListItems: (items) =>
         self = @
-        tallestColumn = 0
-        columnHeights = []
+        @grid.empty()
+        items.appendTo(@grid).hide 0, ->
+            self.positionListItems items
 
-        i = 0
-        until i is self.imagesPerRow 
-            columnHeights.push 0
-            i = i + 1
-        
-        $.each items, (key, value) ->
-            that = $ value
-            columnNum = that.data 'column'
-            height = that.outerHeight true
-
-            columnHeights[columnNum] += height
-
-        $.each columnHeights, (key, value) ->
-            if value > tallestColumn
-                tallestColumn = value
-                tallestColumn
-
-        self.grid.css 'height': tallestColumn + 40
-
-    positionListItems: =>
+    positionListItems: (items) =>
         self = @
-        items = self.grid.find '.drm-grid-item'
 
-        $.each items, (key, value) ->
-            that = $ value
-            index = key + 1
-            columnNum = if index % self.imagesPerRow is 0 then self.imagesPerRow - 1 else (index % self.imagesPerRow) - 1
-            that.attr 'data-column', columnNum
-            that.attr 'data-num', index
-            prevImage = if index > self.imagesPerRow then self.grid.find('.drm-grid-item').eq(index - (self.imagesPerRow + 1)) else null
+        # add height to grid holder to accomodate images
+        _resizeHolder = (items) ->
+            _tallestColumn = 0
+            _columnHeights = []
+
+            _i = 0
+            until _i is self.imagesPerRow 
+                _columnHeights.push 0
+                _i = _i + 1
             
-            if prevImage?
-                margin = prevImage.outerWidth(true) - prevImage.outerWidth(false)
-                top = if index < ((self.imagesPerRow * 2) + 1) then prevImage.outerHeight(false) + margin else prevImage.outerHeight(false) + margin + prevImage.position().top
-                left = (prevImage.outerWidth(false) * columnNum) + (margin * columnNum)
+            $.each items, (key, value) ->
+                _that = $ value
+                _columnNum = _that.data 'column'
+                _height = _that.outerHeight true
 
-                that.css
-                    'top': top
-                    'left': left
+                _columnHeights[_columnNum] += _height
+
+            $.each _columnHeights, (key, value) ->
+                if value > _tallestColumn
+                    _tallestColumn = value
+                    _tallestColumn
+
+            self.grid.css 'height': _tallestColumn + 40
+
+        # need to keep track of column length so _that any one column doesn't get too long
+
+        $.each items, (key, value) ->
+            _that = $ value
+            _index = key + 1
+            _columnNum = if _index % self.imagesPerRow is 0 then self.imagesPerRow - 1 else (_index % self.imagesPerRow) - 1
+            _that.attr 'data-column', _columnNum
+            _that.attr 'data-num', _index
+            _prevImage = if _index > self.imagesPerRow then self.grid.find('.drm-grid-item').eq(_index - (self.imagesPerRow + 1)) else null
+            
+            if _prevImage?
+                _margin = _prevImage.outerWidth(true) - _prevImage.outerWidth(false)
+                _top = if _index < ((self.imagesPerRow * 2) + 1) then _prevImage.outerHeight(false) + _margin else _prevImage.outerHeight(false) + _margin + _prevImage.position().top
+                _left = (_prevImage.outerWidth(false) * _columnNum) + (_margin * _columnNum)
+
+                _that.css
+                    'top': _top
+                    'left': _left
                     'position': 'absolute'
             else
-                that.css
+                _that.css
                     'top': 0
                     'left': 0
-                    'position': 'relative'                    
+                    'position': 'relative'
 
-            that.fadeIn 1000            
+            _that.show()
 
-        self.resizeGrid items
+        _resizeHolder items
 
     filterListItems: (filter) =>
-        self = @
-        self.grid.empty()
+        # filter images by tag
+        filter = if window.location.hash then filter else 'all'
+        window.location.hash = filter
 
-        if filter is 'all'
-            $.each self.items, (key, value) ->
-                that = $ value
-                that.appendTo(self.grid).hide()
+        if filter in @tags or filter is 'all'
+            filteredItems = if filter is 'all' then @items else @items.has "ul.caption-tags li:containsNC(#{filter})"
+            @addListItems filteredItems
         else
-            $.each self.items, (key, value) ->
-                that = $ value
-                tagList = that.find 'ul.caption-tags'
-
-                hasTag = if tagList.has("li:containsNC(#{filter})").length isnt 0 then true else false
-
-                if hasTag then that.appendTo(self.grid).hide()
-
-        self.positionListItems()
+            $('<p></p>',
+                text: 'no items match').appendTo @grid
+        
 
 new DrmFlexibleGrid()
