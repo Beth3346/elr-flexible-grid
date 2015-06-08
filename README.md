@@ -1,19 +1,21 @@
-# DRM Flexible Grid
+# ELR Flexible Grid
 
 [![Built with Grunt](https://cdn.gruntjs.com/builtwith.png)](http://gruntjs.com/)
 
-A jQuery component for creating a flexible, Pinterest like grid
-Requires jQuery
+A jQuery component
 
-## Features:
+### Dependencies:
 
-+ grid items are displayed in a masonry layout
-+ ability to filter items by tag
++ jQuery
 
-## Usage:
+### Features:
 
-### Initialize:
+### Config:
 
-#### Options:
+### Example Usage:
 
-#### Examples:
+#### Sample html
+
+###License
+
+ELR-Flexible Grid is open-sourced software licensed under the [MIT license](http://opensource.org/licenses/MIT)
