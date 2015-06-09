@@ -1,0 +1,33 @@
+{
+  "name": "elr-flexible-grid",
+  "version": "1.0.0",
+  "homepage": "https://github.com/elr-utilities/elr-flexible-grid",
+  "authors": [
+    "Elizabeth Rogers <beth@elizabeth-rogers.com>"
+  ],
+  "description": "Javascript Alerts",
+  "main": "dist/elr-flexible-grid.js",
+  "moduleType": [
+    "globals"
+  ],
+  "keywords": [
+    "flexible grid",
+    "image grid",
+    "grid",
+    "jquery",
+    "javascript",
+    "ui"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests",
+    "src"
+  ],
+  "dependencies": {
+    "jquery": "~2.1.4"
+  }
+}
