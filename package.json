@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "babel-runtime": "^6.0.0",
-    "elr-utility-lib": "^1.0.5",
+    "elr-utility-lib": "",
     "jquery": "^3.1.1"
   },
   "devDependencies": {
