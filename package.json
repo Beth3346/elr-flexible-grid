@@ -1,6 +1,6 @@
 {
   "name": "elr-filter-grid",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "a basic content filter-grid",
   "main": "dist/elr-filter-grid.js",
   "repository": {
