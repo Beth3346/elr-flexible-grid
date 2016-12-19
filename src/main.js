@@ -26,7 +26,7 @@ const elrFilterGrid = function({
 
             window.location.hash = filter;
 
-            if (($.inArray(filter, tags) !== -1) || filter === 'all') {
+            if ((elr.inArray(tags, filter) !== -1) || filter === 'all') {
                 if (filter === 'all') {
                     $filteredItems = $items;
                 } else {
@@ -41,8 +41,7 @@ const elrFilterGrid = function({
             }
         },
         addFilterButtons(tags, $nav) {
-
-            $.each(tags, function(k, v) {
+            elr.each(tags, function(k, v) {
                 const $tagButton = ui.createElement('button', {
                     'class': 'elr-button elr-button-primary elr-grid-filter',
                     'text': elr.capitalize(v),
