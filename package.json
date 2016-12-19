@@ -36,6 +36,21 @@
     "mocha-notifier-reporter": "^0.1.2",
     "nyc": "^10.0.0"
   },
+  "config": {
+    "ghooks": {
+      "pre-commit": "gulp"
+    }
+  },
+  "nyc": {
+    "check-coverage": true,
+    "branches": 0,
+    "functions": 0,
+    "lines": 0,
+    "statements": 0,
+    "include": [
+      "src/*.js"
+    ]
+  },
   "homepage": "http://www.elizabeth-rogers.com/elr-utilities/js-filter-grid.html",
   "keywords": [
     "javascript, jquery, filter, grid, images, ui"
