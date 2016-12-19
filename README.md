@@ -1,4 +1,6 @@
-# elr-filter-grid 
+# elr-filter-grid
+
+[![Build Status](https://travis-ci.org/Beth3346/elr-flexible-grid.svg?branch=master)](https://travis-ci.org/Beth3346/elr-flexible-grid)
 
 a basic content filter-grid
 
@@ -16,6 +18,7 @@ npm install elr-filter-grid --save
 
 - [babel-runtime](https://github.com/babel/babel/tree/master/packages): babel selfContained runtime
 - [elr-utility-lib](https://github.com/Beth3346/elr-utility-lib): JavaScript Utility Library
+- [elr-ui](https://github.com/Beth3346/elr-ui): JavaScript UI Library
 - [jquery](https://github.com/jquery/jquery): JavaScript library for DOM operations
 
 ## Dev Dependencies

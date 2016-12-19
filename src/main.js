@@ -1,7 +1,9 @@
 import elrUtlities from 'elr-utility-lib';
+import elrUI from 'elr-ui';
 const $ = require('jquery');
 
 let elr = elrUtlities();
+let ui = elrUI();
 
 $.extend($.expr[':'], {
     containsNC: function(elem, i, match) {
@@ -33,7 +35,7 @@ const elrFilterGrid = function({
 
                 this.addListItems($filteredItems);
             } else {
-                elr.createElement('p', {
+                ui.createElement('p', {
                     text: 'no items match'
                 }).appendTo(this.$grid);
             }
@@ -41,7 +43,7 @@ const elrFilterGrid = function({
         addFilterButtons(tags, $nav) {
 
             $.each(tags, function(k, v) {
-                const $tagButton = elr.createElement('button', {
+                const $tagButton = ui.createElement('button', {
                     'class': 'elr-button elr-button-primary elr-grid-filter',
                     'text': elr.capitalize(v),
                     'data-filter': v
@@ -65,7 +67,9 @@ const elrFilterGrid = function({
         const $gridNav = $('.elr-grid-nav');
         const $items = self.$grid.find('.elr-grid-item');
         const tags = elr.unique(elr.toArray(self.$grid.find('ul.caption-tags li')));
-        let filter = (window.location.hash) ? filter : 'all';
+        let filter;
+
+        filter = (window.location.hash) ? filter : 'all';
 
         $(window).on('load', function() {
             self.addFilterButtons(tags, $gridNav);
