@@ -15,12 +15,11 @@ const elrFilterGrid = function({
     gridClass = 'elr-flexible-grid'
 } = {}) {
     const self = {
-        $grid: $(`.${gridClass}`),
-        addListItems($items) {
-            this.$grid.empty();
-            $items.appendTo(this.$grid);
-        },
-        filterListItems(filter, $items, tags) {
+        // addItems($container, $items) {
+        //     $container.empty();
+        //     $items.appendTo($container);
+        // },
+        filterListItems($container, filter, $items, tags) {
             // filter list items by tag
             let $filteredItems;
 
@@ -33,11 +32,11 @@ const elrFilterGrid = function({
                     $filteredItems = $items.has(`ul.caption-tags li:containsNC(${filter})`);
                 }
 
-                this.addListItems($filteredItems);
+                ui.refreshContainer($container, $filteredItems);
             } else {
                 ui.createElement('p', {
                     text: 'no items match'
-                }).appendTo(this.$grid);
+                }).appendTo($container);
             }
         },
         addFilterButtons(tags, $nav) {
@@ -61,11 +60,12 @@ const elrFilterGrid = function({
         }
     };
 
-    if (self.$grid.length) {
+    $grid = $(`.${gridClass}`);
+    if ($grid.length) {
         const hash = window.location.hash;
         const $gridNav = $('.elr-grid-nav');
-        const $items = self.$grid.find('.elr-grid-item');
-        const tags = elr.unique(elr.toArray(self.$grid.find('ul.caption-tags li')));
+        const $items = $grid.find('.elr-grid-item');
+        const tags = elr.unique(elr.toArray($grid.find('ul.caption-tags li')));
         let filter;
 
         filter = (window.location.hash) ? filter : 'all';
@@ -74,7 +74,7 @@ const elrFilterGrid = function({
             self.addFilterButtons(tags, $gridNav);
 
             if (hash) {
-                self.filterListItems(hash.slice(1), $items, tags);
+                self.filterListItems($grid, hash.slice(1), $items, tags);
                 self.setActiveButton(hash.slice(1), $gridNav);
             }
 
@@ -88,15 +88,15 @@ const elrFilterGrid = function({
             const $that = $(this);
             const filter = $that.data('filter').toLowerCase();
 
-            self.filterListItems(filter, $items, tags);
+            self.filterListItems($grid, filter, $items, tags);
             self.setActiveButton(filter, $gridNav);
         });
 
-        self.$grid.on('click', '.caption-tags li', function(e) {
+        $grid.on('click', '.caption-tags li', function(e) {
             e.preventDefault();
             const filter = $(this).data('filter').toLowerCase();
 
-            self.filterListItems(filter, $items, tags);
+            self.filterListItems($grid, filter, $items, tags);
             self.setActiveButton(filter, $gridNav);
         });
     }
