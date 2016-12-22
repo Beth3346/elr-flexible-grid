@@ -60,7 +60,8 @@ const elrFilterGrid = function({
         }
     };
 
-    $grid = $(`.${gridClass}`);
+    const $grid = $(`.${gridClass}`);
+
     if ($grid.length) {
         const hash = window.location.hash;
         const $gridNav = $('.elr-grid-nav');
