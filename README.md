@@ -1,6 +1,6 @@
 # elr-filter-grid
 
-[![Build Status](https://travis-ci.org/Beth3346/elr-flexible-grid.svg?branch=master)](https://travis-ci.org/Beth3346/elr-flexible-grid)
+[![Build Status](https://travis-ci.org/Beth3346/elr-flexible-grid.svg?branch=master)](https://travis-ci.org/Beth3346/elr-flexible-grid) [![Greenkeeper badge](https://badges.greenkeeper.io/Beth3346/elr-flexible-grid.svg)](https://greenkeeper.io/)
 
 a basic content filter-grid
 
